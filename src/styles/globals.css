@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply background text font-sans;
+}
+
+.background {
+  @apply bg-light dark:bg-dark;
+}
+
+.text {
+  @apply text-dark dark:text-light;
+}
