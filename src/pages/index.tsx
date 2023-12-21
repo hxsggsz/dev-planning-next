@@ -1,9 +1,38 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useForm } from "@/hooks/useForm/useForm";
 import Head from "next/head";
 
 export default function Home() {
+  const form = useForm({
+    initialState: {
+      name: "",
+      room: "",
+    },
+    validation: (inputs) => {
+      const errors: typeof inputs = {
+        name: "",
+        room: "",
+      };
+
+      if (inputs.name.length < 5 || inputs.name.length > 30) {
+        errors.name = "name should be longer than 5 or greater than 30";
+        return errors;
+      }
+
+      if (inputs.room.length < 5 || inputs.room.length > 30) {
+        errors.room = "room should be longer than 5 or greater than 30";
+        return errors;
+      }
+
+      return null;
+    },
+    handleSubmit: (inputs) => {
+      console.log(inputs);
+    },
+  });
+
   return (
     <>
       <Head>
@@ -13,16 +42,41 @@ export default function Home() {
       </Head>
       <main className="flex min-h-screen flex-col items-center justify-center gap-5">
         {/* eslint-disable-next-line tailwindcss/classnames-order */}
-        <h1 className="text-main text-logo font-bold">Dev Planning</h1>
+        <h1 className="text-logo font-bold text-main">Dev Planning</h1>
 
-        <form className="grid w-1/3 items-center gap-4 max-sm:w-full max-sm:px-6">
+        <form
+          onSubmit={form.onSubmit}
+          className="grid w-1/3 items-center gap-4 max-sm:w-full max-sm:px-6"
+        >
           <div className=" grid w-full items-center gap-1.5">
             <Label htmlFor="name">Name</Label>
-            <Input type="text" id="name" placeholder="Your best name" />
+            <Input
+              value={form.inputs.name}
+              onChange={form.handleChange}
+              type="text"
+              name="name"
+              placeholder="Your best name"
+            />
+            {form.error?.name && (
+              <span className="text-sm font-semibold text-red-500">
+                {form.error.name}
+              </span>
+            )}
           </div>
           <div className=" grid w-full items-center gap-1.5">
             <Label htmlFor="name">Room's name</Label>
-            <Input type="text" id="name" placeholder="A funny room name" />
+            <Input
+              value={form.inputs.room}
+              onChange={form.handleChange}
+              type="text"
+              name="room"
+              placeholder="A funny room name"
+            />
+            {form.error?.room && (
+              <span className="text-sm font-semibold text-red-500">
+                {form.error.room}
+              </span>
+            )}
           </div>
           <Button size="full">Create Room</Button>
         </form>
