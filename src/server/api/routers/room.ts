@@ -6,7 +6,7 @@ export const roomRouter = createTRPCRouter({
   createRoom: publicProcedure
     .input(
       z.object({
-        id: z.string(),
+        id: z.string().cuid(),
         roomName: z.string().min(5).max(30),
       }),
     )
@@ -22,14 +22,34 @@ export const roomRouter = createTRPCRouter({
     }),
 
   searchRoom: publicProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
-      await ctx.db.room.findUnique({
+      return await ctx.db.room.findUnique({
         where: {
           id: input.id,
         },
+        include: {
+          users: {
+            orderBy: {
+              createdAt: "asc",
+            },
+          },
+        },
       });
+    }),
 
-      return;
+  addUserRoom: publicProcedure
+    .input(z.object({ roomId: z.string().cuid(), userId: z.string().cuid() }))
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.room.update({
+        data: {
+          users: {
+            connect: { id: input.userId },
+          },
+        },
+        where: {
+          id: input.roomId,
+        },
+      });
     }),
 });
