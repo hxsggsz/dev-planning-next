@@ -11,8 +11,12 @@ export function useForm<T extends object>({
 
   const validationValues = (inputs: T) => {
     const errors = validation(inputs);
-    setError(errors);
-    return errors;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const checkErrors = Object.values(errors).some((error) => error.length > 0);
+    const hasErrors = checkErrors ? errors : null;
+
+    setError(hasErrors);
+    return hasErrors;
   };
 
   return {

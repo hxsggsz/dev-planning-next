@@ -18,15 +18,13 @@ export default function Home() {
 
       if (inputs.name.length < 5 || inputs.name.length > 30) {
         errors.name = "name should be longer than 5 or greater than 30";
-        return errors;
       }
 
       if (inputs.room.length < 5 || inputs.room.length > 30) {
         errors.room = "room should be longer than 5 or greater than 30";
-        return errors;
       }
 
-      return null;
+      return errors;
     },
     handleSubmit: (inputs) => {
       console.log(inputs);
