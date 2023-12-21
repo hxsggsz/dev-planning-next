@@ -39,12 +39,13 @@ export default function Home() {
       await createUser
         .mutateAsync({ name: inputs.name, role: "admin" })
         .then(async (userData) => {
+          localStorage.setItem("@me", userData.id);
           await createRoom
             .mutateAsync({
               id: userData.id,
               roomName: inputs.room,
             })
-            .then((roomData) => router.push(`/${roomData.id}/join`));
+            .then((roomData) => router.push(`/${roomData.id}`));
         });
     },
   });

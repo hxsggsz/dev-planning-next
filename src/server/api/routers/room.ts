@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import { TRPCError } from "@trpc/server";
 
 export const roomRouter = createTRPCRouter({
   createRoom: publicProcedure
@@ -49,6 +50,35 @@ export const roomRouter = createTRPCRouter({
         },
         where: {
           id: input.roomId,
+        },
+      });
+    }),
+
+  removeUserRoom: publicProcedure
+    .input(
+      z.object({
+        roomId: z.string().cuid(),
+        userToRemoveId: z.string().cuid(),
+        userAdminId: z.string().cuid(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const pseudoAdminUser = await ctx.db.user.findUnique({
+        where: {
+          id: input.userAdminId,
+        },
+      });
+
+      if (pseudoAdminUser && pseudoAdminUser.role !== "admin") {
+        throw new TRPCError({
+          message: "you are not authorized to do this action",
+          code: "UNAUTHORIZED",
+        });
+      }
+      return await ctx.db.user.delete({
+        where: {
+          id: input.userToRemoveId,
+          roomId: input.roomId,
         },
       });
     }),

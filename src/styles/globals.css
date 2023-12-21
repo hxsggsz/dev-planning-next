@@ -13,3 +13,7 @@ body {
 .text {
   @apply text-dark dark:text-light;
 }
+
+.invertTheme {
+  @apply bg-dark text-light dark:bg-light dark:text-dark;
+}

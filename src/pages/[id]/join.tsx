@@ -51,6 +51,7 @@ export default function Planning({ id }: PropTypes) {
       await createUser
         .mutateAsync({ name: inputs.name, role: "user" })
         .then((userData) => {
+          localStorage.setItem("@me", userData.id);
           addUserRoom.mutate({ roomId: id, userId: userData.id });
         });
     },
