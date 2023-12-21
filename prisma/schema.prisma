@@ -10,11 +10,23 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        String      @id @unique @default(cuid())
+model User {
+    id         String   @id @unique @default(cuid())
+    name       String
+    createdAt  DateTime @default(now())
+    fibbonacci String   @default("")
+    Room       Room?    @relation(fields: [roomId], references: [id])
+    roomId     String?
+
+    @@map("user")
+}
+
+model Room {
+    id        String   @id @unique @default(cuid())
     name      String
     createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
 
-    @@index([name])
+    users User[]
+
+    @@map("room")
 }

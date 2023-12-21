@@ -2,9 +2,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useForm } from "@/hooks/useForm/useForm";
+import { api } from "@/utils/api";
 import Head from "next/head";
+import { useRouter } from "next/router";
 
 export default function Home() {
+  const router = useRouter();
+
+  const createRoom = api.room.createRoom.useMutation();
+
+  const createUser = api.user.createUser.useMutation({
+    onSuccess: async (data) => await router.push(`/?id=${data.id}`),
+  });
+
   const form = useForm({
     initialState: {
       name: "",
@@ -26,8 +36,14 @@ export default function Home() {
 
       return errors;
     },
-    handleSubmit: (inputs) => {
-      console.log(inputs);
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    handleSubmit: async (inputs) => {
+      await createUser.mutateAsync({ name: inputs.name }).then((userData) => {
+        createRoom.mutate({
+          id: userData.id,
+          roomName: inputs.room,
+        });
+      });
     },
   });
 
