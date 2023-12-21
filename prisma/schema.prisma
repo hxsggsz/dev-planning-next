@@ -15,6 +15,7 @@ model User {
     name       String
     createdAt  DateTime @default(now())
     fibbonacci String   @default("")
+    role       String
     Room       Room?    @relation(fields: [roomId], references: [id])
     roomId     String?
 

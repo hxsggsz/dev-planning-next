@@ -38,12 +38,14 @@ export default function Home() {
     },
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     handleSubmit: async (inputs) => {
-      await createUser.mutateAsync({ name: inputs.name }).then((userData) => {
-        createRoom.mutate({
-          id: userData.id,
-          roomName: inputs.room,
+      await createUser
+        .mutateAsync({ name: inputs.name, role: "admin" })
+        .then((userData) => {
+          createRoom.mutate({
+            id: userData.id,
+            roomName: inputs.room,
+          });
         });
-      });
     },
   });
 
