@@ -16,7 +16,7 @@ export function Card(props: ICard) {
       whileHover={props.cancelAnimation ? {} : { scale: 1.2, y: -12 }}
       transition={{ type: "just", duration: 0.2 }}
       className={twMerge(
-        "invertTheme h-16 w-12 flex justify-center items-center cursor-pointer select-none rounded-sm border-2 border-main transition-all data-[active=true]:bg-main",
+        "invertTheme h-16 w-12 flex justify-center items-center cursor-pointer select-none rounded-lg border-2 border-main transition-all data-[active=true]:bg-main",
         props.className,
       )}
     >

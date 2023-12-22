@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
+import { OnlyFibboNumbers, fibbonacci } from "@/utils/fibbonacci";
 
 export const roomRouter = createTRPCRouter({
   createRoom: publicProcedure
@@ -122,7 +123,6 @@ export const roomRouter = createTRPCRouter({
           },
         },
       });
-      console.log(roomUsers);
 
       if (!roomUsers) {
         throw new TRPCError({
@@ -133,7 +133,6 @@ export const roomRouter = createTRPCRouter({
 
       const usersId = roomUsers.users.map((user) => user.id);
 
-      console.log(usersId);
       return await ctx.db.user.updateMany({
         where: {
           id: { in: usersId },
@@ -142,5 +141,99 @@ export const roomRouter = createTRPCRouter({
           fibbonacci: "",
         },
       });
+    }),
+
+  revealFibboRoom: publicProcedure
+    .input(
+      z.object({
+        roomId: z.string().cuid(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const roomUsers = await ctx.db.room.findUnique({
+        where: {
+          id: input.roomId,
+        },
+        include: {
+          users: {
+            orderBy: {
+              createdAt: "asc",
+            },
+          },
+        },
+      });
+
+      if (!roomUsers) {
+        throw new TRPCError({
+          message: "Room not found",
+          code: "NOT_FOUND",
+        });
+      }
+
+      const usersId = roomUsers.users.map((user) => user.id);
+
+      const users = await ctx.db.user.findMany({
+        where: {
+          id: { in: usersId },
+        },
+      });
+      const fibboValuesGroup: number[] = [];
+
+      users.map((user) => {
+        const fibboValues = user.fibbonacci;
+        const fibboNumber = Number(fibboValues);
+
+        if (fibboNumber) {
+          fibboValuesGroup.push(fibboNumber);
+        }
+      });
+
+      const sumFibbo = fibboValuesGroup.reduce((accumulator, currentNumber) => {
+        return accumulator + currentNumber;
+      }, 0);
+
+      const averageFibbo = sumFibbo / fibboValuesGroup.length;
+
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      function fibonacci(number: number) {
+        if (number <= 1) {
+          return number;
+        }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        return fibonacci(number - 1) + fibonacci(number - 2);
+      }
+
+      function nearestNumber(number: number) {
+        // Encontre o índice do maior número de Fibonacci menor ou igual ao número fornecido.
+        let index = 0;
+        let fibonacciNumber = 0;
+        while (fibonacciNumber < number) {
+          index++;
+          fibonacciNumber = fibonacci(index);
+        }
+
+        // Se o número fornecido for igual ao número de Fibonacci, retorne-o.
+        if (fibonacciNumber === number) {
+          return number;
+        }
+
+        // Se o número fornecido for menor que o número de Fibonacci, retorne o número de Fibonacci.
+        if (number < fibonacciNumber) {
+          return fibonacciNumber;
+        }
+
+        // Caso contrário, retorne o número arredondado para cima.
+        else {
+          return fibonacciNumber + 1;
+        }
+      }
+
+      const nextFibbonacci = nearestNumber(averageFibbo);
+
+      return {
+        average: averageFibbo,
+        fibbonacci: nextFibbonacci,
+      };
     }),
 });

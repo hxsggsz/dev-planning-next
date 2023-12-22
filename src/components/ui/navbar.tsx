@@ -3,6 +3,8 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Person } from "./person";
 import { Skeleton } from "./skeleton";
+import { Card } from "./card";
+import { useFibboStore } from "@/stores/useFibboStore";
 
 interface INavbar {
   removeUser: (id: string) => void;
@@ -21,6 +23,8 @@ interface INavbar {
 
 export function Navbar(props: INavbar) {
   const [open, setOpen] = useState(true);
+
+  const isFibboReveal = useFibboStore((state) => state.isFibboReveal);
 
   const renderSkeleton = () => (
     <>
@@ -46,23 +50,42 @@ export function Navbar(props: INavbar) {
   const renderPersonList = () => {
     const userId = typeof window !== "undefined" && localStorage.getItem("@me");
     return props?.list?.map((person) => (
-      <li className="flex items-center justify-between p-2" key={person.id}>
+      <li
+        className="flex items-center justify-between overflow-hidden p-2"
+        key={person.id}
+      >
         <Person
           fibbo={person.fibbonacci}
           name={person.id === userId ? "Me" : person.name}
         />
-        {props.isAdmin && person.id !== userId && (
-          <button onClick={() => props.removeUser(person.id)}>
-            <Trash2 className="text-main transition-all hover:fill-main" />
-          </button>
-        )}
+        <div className="flex gap-2">
+          <Card
+            cancelAnimation
+            className="h-12 w-10 cursor-default"
+            fibbo={
+              person.fibbonacci && isFibboReveal
+                ? person.fibbonacci
+                : person.fibbonacci && !isFibboReveal
+                  ? "🫡"
+                  : "🤔"
+            }
+            activeFibbo={""}
+            //eslint-disable-next-line @typescript-eslint/no-empty-function
+            handleClick={() => {}}
+          />
+          {props.isAdmin && person.id !== userId && open && (
+            <button onClick={() => props.removeUser(person.id)}>
+              <Trash2 className="text-main transition-all hover:fill-main" />
+            </button>
+          )}
+        </div>
       </li>
     ));
   };
 
   return (
     <motion.nav
-      animate={{ minWidth: open ? "250px" : "120px" }}
+      animate={{ minWidth: open ? "250px" : "40px" }}
       data-open={open}
       className="invertTheme min-h-screen w-20 overflow-hidden px-2"
     >

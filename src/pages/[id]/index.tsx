@@ -4,11 +4,11 @@ import { useToast } from "@/components/ui/use-toast";
 import { api } from "@/utils/api";
 import { type GetServerSideProps } from "next";
 import { useEffect, useMemo, useState } from "react";
-import { generateSSGHelper } from "@/server/helpers/ssg";
 import Head from "next/head";
 import { CardBoard } from "@/components/ui/cardBoard";
 import { Button } from "@/components/ui/button";
 import { useFibboStore } from "@/stores/useFibboStore";
+import { Coins, RotateCcw } from "lucide-react";
 
 interface PropTypes {
   id: string;
@@ -17,18 +17,23 @@ interface PropTypes {
 export default function Planning({ id }: PropTypes) {
   const [meId, setMeId] = useState<string | null>("");
 
-  const resetFibboStore = useFibboStore((state) => state.resetFibbo);
+  const fibboStore = useFibboStore((state) => state);
 
   const { toast } = useToast();
 
   const ctx = api.useContext();
 
+  const searchRoom = api.room.searchRoom.useQuery({ id });
+
   useEffect(() => {
     setMeId(localStorage.getItem("@me"));
+    if(searchRoom.error) {
+      console.log('condicao')
+    }
   }, []);
 
   const getUser = api.user.searchUser.useQuery({ id: meId! });
-  const searchRoom = api.room.searchRoom.useQuery({ id });
+
   const removeUserRoom = api.room.removeUserRoom.useMutation({
     onSuccess: () => ctx.invalidate(),
     onError: (error) =>
@@ -54,6 +59,14 @@ export default function Planning({ id }: PropTypes) {
         description: error.message,
       }),
   });
+  const revealFibbo = api.room.revealFibboRoom.useMutation({
+    onSuccess: () => ctx.invalidate(),
+    onError: (error) =>
+      toast({
+        title: "Something bad happened",
+        description: error.message,
+      }),
+  });
 
   function removeUser(userToRemoveId: string) {
     removeUserRoom.mutate({ roomId: id, userToRemoveId, userAdminId: meId! });
@@ -69,7 +82,13 @@ export default function Planning({ id }: PropTypes) {
 
   function resetFibbonnacci() {
     resetFibbo.mutate({ roomId: id });
-    resetFibboStore();
+    fibboStore.resetFibbo();
+    fibboStore.revealFibbo(false);
+  }
+
+  function revealFibbonacci() {
+    revealFibbo.mutate({ roomId: id });
+    fibboStore.revealFibbo();
   }
 
   const findMe = useMemo(() => {
@@ -102,7 +121,41 @@ export default function Planning({ id }: PropTypes) {
         />
         <div className="relative flex min-h-screen w-full items-center justify-center">
           <div className="rounded-md bg-main p-10">
-            <Button onClick={resetFibbonnacci}>reset</Button>
+            <h1 className="text-4xl font-bold">Let's Planning!</h1>
+            <p className="text-xl font-semibold">Select a card</p>
+            {revealFibbo.data && (
+              <>
+                <h1 className="text-xl font-bold text-light/60">
+                  Average:{" "}
+                  <span className="text-light underline">
+                    {revealFibbo.data.average}
+                  </span>
+                </h1>
+                <h1 className="text-xl font-bold text-light/60">
+                  Fibbonacci:{" "}
+                  <span className="text-light underline">
+                    {revealFibbo.data.fibbonacci}
+                  </span>
+                </h1>
+              </>
+            )}
+            <div className="mt-2 flex min-w-52 gap-2">
+              {getUser.data?.role === "admin" && !fibboStore.isFibboReveal ? (
+                <Button variant="white" size="full" onClick={revealFibbonacci}>
+                  <Coins /> Reveal
+                </Button>
+              ) : (
+                getUser.data?.role === "admin" && (
+                  <Button
+                    variant="white"
+                    size="full"
+                    onClick={resetFibbonnacci}
+                  >
+                    <RotateCcw /> Reset
+                  </Button>
+                )
+              )}
+            </div>
           </div>
           {findMe && <CardBoard updateFibbonnacci={updateFibbonnacci} />}
         </div>
@@ -123,10 +176,6 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     };
   }
 
-  const ssg = generateSSGHelper();
-
-  const result = await ssg.room.searchRoom.fetch({ id: id.toString() });
-  console.log("result", result);
   // const trpc = appRouter.createCaller({ db });
   // const result = await trpc.room.searchRoom({ id: id?.toString() });
 
@@ -146,7 +195,6 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   return {
     props: {
       id: id.toString(),
-      // trpcState: ssg.dehydrate(),
     },
   };
 };

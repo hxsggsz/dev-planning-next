@@ -25,6 +25,8 @@ model User {
 model Room {
     id        String   @id @unique @default(cuid())
     name      String
+    isPublic  Boolean  @default(true)
+    isReveal  Boolean  @default(false)
     createdAt DateTime @default(now())
 
     users User[]
