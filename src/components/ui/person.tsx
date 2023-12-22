@@ -1,7 +1,9 @@
 import { useMemo } from "react";
+import { Card } from "./card";
 
 interface IPerson {
   name: string;
+  fibbo: string
 }
 export function Person(props: IPerson) {
   const getInitialLetter = useMemo(() => {
@@ -16,6 +18,14 @@ export function Person(props: IPerson) {
         {getInitialLetter[0]}
       </div>
       <p className="truncate font-semibold text-main">{props.name}</p>
+      <Card
+        cancelAnimation
+        className="h-12 w-10 cursor-default"
+        fibbo={props.fibbo ? '🫡' : '🤔'}
+        activeFibbo={""}
+        //eslint-disable-next-line @typescript-eslint/no-empty-function
+        handleClick={() => {}}
+      />
     </div>
   );
 }

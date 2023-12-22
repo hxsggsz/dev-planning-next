@@ -23,17 +23,34 @@ export function Navbar(props: INavbar) {
   const [open, setOpen] = useState(true);
 
   const renderSkeleton = () => (
-    <div className="flex items-center gap-1">
-      <Skeleton className="h-8 w-8 rounded-full" />
-      <Skeleton className="h-4 w-16" />
-    </div>
+    <>
+      <div className="flex items-center gap-1 py-2">
+        <Skeleton className="h-8 w-8 rounded-full" />
+        <Skeleton className="h-4 w-16" />
+      </div>
+      <div className="flex items-center gap-1 py-2">
+        <Skeleton className="h-8 w-8 rounded-full" />
+        <Skeleton className="h-4 w-16" />
+      </div>
+      <div className="flex items-center gap-1 py-2">
+        <Skeleton className="h-8 w-8 rounded-full" />
+        <Skeleton className="h-4 w-16" />
+      </div>
+      <div className="flex items-center gap-1 py-2">
+        <Skeleton className="h-8 w-8 rounded-full" />
+        <Skeleton className="h-4 w-16" />
+      </div>
+    </>
   );
 
   const renderPersonList = () => {
     const userId = typeof window !== "undefined" && localStorage.getItem("@me");
     return props?.list?.map((person) => (
       <li className="flex items-center justify-between p-2" key={person.id}>
-        <Person name={person.id === userId ? "Me" : person.name} />
+        <Person
+          fibbo={person.fibbonacci}
+          name={person.id === userId ? "Me" : person.name}
+        />
         {props.isAdmin && person.id !== userId && (
           <button onClick={() => props.removeUser(person.id)}>
             <Trash2 className="text-main transition-all hover:fill-main" />
@@ -62,7 +79,9 @@ export function Navbar(props: INavbar) {
         </motion.button>
       </header>
 
-      <ul>{props?.list ? renderPersonList() : renderSkeleton()}</ul>
+      <ul className="max-h-[calc(100vh-40px)] overflow-y-auto scrollbar scrollbar-track-inherit scrollbar-thumb-main scrollbar-thumb-rounded-lg scrollbar-w-2">
+        {props.list ? renderPersonList() : renderSkeleton()}
+      </ul>
     </motion.nav>
   );
 }

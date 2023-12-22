@@ -7,6 +7,8 @@ import { useEffect, useMemo, useState } from "react";
 import { generateSSGHelper } from "@/server/helpers/ssg";
 import Head from "next/head";
 import { CardBoard } from "@/components/ui/cardBoard";
+import { Button } from "@/components/ui/button";
+import { useFibboStore } from "@/stores/useFibboStore";
 
 interface PropTypes {
   id: string;
@@ -14,6 +16,8 @@ interface PropTypes {
 
 export default function Planning({ id }: PropTypes) {
   const [meId, setMeId] = useState<string | null>("");
+
+  const resetFibboStore = useFibboStore((state) => state.resetFibbo);
 
   const { toast } = useToast();
 
@@ -33,10 +37,41 @@ export default function Planning({ id }: PropTypes) {
         description: error.message,
       }),
   });
+  const updateFibbo = api.room.changeFibboUserRoom.useMutation({
+    onSuccess: () => ctx.invalidate(),
+    onError: (error) =>
+      toast({
+        title: "Something bad happened",
+        description: error.message,
+      }),
+  });
+
+  const resetFibbo = api.room.resetFibboRoom.useMutation({
+    onSuccess: () => ctx.invalidate(),
+    onError: (error) =>
+      toast({
+        title: "Something bad happened",
+        description: error.message,
+      }),
+  });
 
   function removeUser(userToRemoveId: string) {
     removeUserRoom.mutate({ roomId: id, userToRemoveId, userAdminId: meId! });
   }
+
+  function updateFibbonnacci(fibbo: string) {
+    updateFibbo.mutate({
+      fibbo,
+      roomId: id,
+      userId: meId!,
+    });
+  }
+
+  function resetFibbonnacci() {
+    resetFibbo.mutate({ roomId: id });
+    resetFibboStore();
+  }
+
   const findMe = useMemo(() => {
     return searchRoom.data?.users.find((user) => user.id === meId);
   }, [searchRoom.data]);
@@ -65,8 +100,11 @@ export default function Planning({ id }: PropTypes) {
           removeUser={removeUser}
           list={searchRoom.data?.users}
         />
-        <div className="relative flex min-h-screen w-full">
-          {findMe && <CardBoard />}
+        <div className="relative flex min-h-screen w-full items-center justify-center">
+          <div className="rounded-md bg-main p-10">
+            <Button onClick={resetFibbonnacci}>reset</Button>
+          </div>
+          {findMe && <CardBoard updateFibbonnacci={updateFibbonnacci} />}
         </div>
       </main>
     </>

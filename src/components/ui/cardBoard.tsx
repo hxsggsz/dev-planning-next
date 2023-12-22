@@ -1,21 +1,33 @@
-import { useState } from "react";
 import { Card } from "./card";
+import { fibbonacci } from "@/utils/fibbonacci";
+import { useFibboStore } from "@/stores/useFibboStore";
 
-const fibbonacci = [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, "?"];
+interface ICardBoard {
+  updateFibbonnacci: (fibbo: string) => void;
+}
 
-export function CardBoard() {
-  const [fibbo, setFibbo] = useState<string | number>("");
-  function handlea(fibbo: string | number) {
-    console.log(fibbo);
-    setFibbo(fibbo);
+export function CardBoard(props: ICardBoard) {
+  const updateFibboStore = useFibboStore((state) => state.updateFibbo);
+  const fibbo = useFibboStore((state) => state.fibbo);
+
+  function updateFibbo(fibbo: string) {
+    updateFibboStore(fibbo);
+    props.updateFibbonnacci(fibbo);
   }
+
   return (
-    <ul className="absolute bottom-2 left-1/2 z-10 flex -translate-x-1/2 gap-2 px-2 max-[930px]:fixed max-[930px]:blur-sm">
-      {fibbonacci.map((number) => (
-        <li key={number}>
-          <Card activeFibbo={fibbo} handleClick={handlea} fibbo={number} />
-        </li>
-      ))}
-    </ul>
+    <div className="bg-blue-900">
+      <ul className="absolute bottom-2 left-1/2 z-10 flex -translate-x-1/2 gap-2 px-2 max-[930px]:fixed ">
+        {fibbonacci.map((number) => (
+          <li key={number}>
+            <Card
+              activeFibbo={fibbo}
+              handleClick={updateFibbo}
+              fibbo={number}
+            />
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
