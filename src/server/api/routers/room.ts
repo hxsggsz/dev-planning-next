@@ -7,7 +7,7 @@ export const roomRouter = createTRPCRouter({
   createRoom: publicProcedure
     .input(
       z.object({
-        id: z.string().cuid(),
+        id: z.string(),
         roomName: z.string().min(5).max(30),
       }),
     )
@@ -23,7 +23,7 @@ export const roomRouter = createTRPCRouter({
     }),
 
   searchRoom: publicProcedure
-    .input(z.object({ id: z.string().cuid() }))
+    .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       return await ctx.db.room.findUnique({
         where: {
@@ -40,7 +40,7 @@ export const roomRouter = createTRPCRouter({
     }),
 
   addUserRoom: publicProcedure
-    .input(z.object({ roomId: z.string().cuid(), userId: z.string().cuid() }))
+    .input(z.object({ roomId: z.string(), userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.room.update({
         data: {
@@ -57,9 +57,9 @@ export const roomRouter = createTRPCRouter({
   removeUserRoom: publicProcedure
     .input(
       z.object({
-        roomId: z.string().cuid(),
-        userToRemoveId: z.string().cuid(),
-        userAdminId: z.string().cuid(),
+        roomId: z.string(),
+        userToRemoveId: z.string(),
+        userAdminId: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -71,7 +71,7 @@ export const roomRouter = createTRPCRouter({
 
       if (pseudoAdminUser && pseudoAdminUser.role !== "admin") {
         throw new TRPCError({
-          message: "you are not authorized to do this action",
+          message: "You are not authorized to do this action",
           code: "UNAUTHORIZED",
         });
       }

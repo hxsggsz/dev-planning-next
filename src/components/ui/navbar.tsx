@@ -6,6 +6,7 @@ import { Skeleton } from "./skeleton";
 
 interface INavbar {
   removeUser: (id: string) => void;
+  isAdmin: boolean;
   list:
     | {
         id: string;
@@ -29,13 +30,15 @@ export function Navbar(props: INavbar) {
   );
 
   const renderPersonList = () => {
-    const userId = localStorage.getItem("@me");
+    const userId = typeof window !== "undefined" && localStorage.getItem("@me");
     return props?.list?.map((person) => (
-      <li className="flex items-center p-2" key={person.id}>
+      <li className="flex items-center justify-between p-2" key={person.id}>
         <Person name={person.id === userId ? "Me" : person.name} />
-        <button onClick={() => props.removeUser(person.id)}>
-          <Trash2 />
-        </button>
+        {props.isAdmin && person.id !== userId && (
+          <button onClick={() => props.removeUser(person.id)}>
+            <Trash2 className="text-main transition-all hover:fill-main" />
+          </button>
+        )}
       </li>
     ));
   };
