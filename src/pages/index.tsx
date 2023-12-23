@@ -130,7 +130,12 @@ export default function Home() {
             <span className="font-medium">This room is public?</span>
           </div>
           <Toaster />
-          <Button size="full">Create Room</Button>
+          <Button
+            disabled={createRoom.isLoading || createUser.isLoading}
+            size="full"
+          >
+            Create Room
+          </Button>
         </form>
       </main>
     </>

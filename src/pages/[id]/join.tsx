@@ -100,7 +100,16 @@ export default function Planning({ id }: PropTypes) {
               </span>
             )}
           </div>
-          <Button size="full">Create Room</Button>
+          <Button
+            disabled={
+              searchRoom.isLoading ||
+              createUser.isLoading ||
+              addUserRoom.isLoading
+            }
+            size="full"
+          >
+            Create Room
+          </Button>
         </form>
       </main>
     </>
