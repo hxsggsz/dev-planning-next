@@ -8,10 +8,10 @@
  */
 import { initTRPC } from "@trpc/server";
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
-import { SuperJSON } from "superjson";
 import { ZodError } from "zod";
 
 import { db } from "@/server/db";
+import { transformer } from "../transformer";
 
 /**
  * 1. CONTEXT
@@ -58,7 +58,7 @@ export const createTRPCContext = (_opts: CreateNextContextOptions) => {
  */
 
 const t = initTRPC.context<typeof createTRPCContext>().create({
-  transformer: SuperJSON,
+  transformer,
   errorFormatter({ shape, error }) {
     return {
       ...shape,
