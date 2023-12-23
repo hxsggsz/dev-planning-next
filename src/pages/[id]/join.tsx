@@ -14,7 +14,7 @@ interface PropTypes {
 export default function Planning({ id }: PropTypes) {
   const router = useRouter();
 
-  const searchRoom = api.room.searchRoom.useQuery({ id });
+  const searchRoom = api.room.searchRoom.useQuery({ id }, { retry: false });
   const addUserRoom = api.room.addUserRoom.useMutation({
     onSuccess: async () => {
       await router.push(`/${id}`);
@@ -36,6 +36,18 @@ export default function Planning({ id }: PropTypes) {
         errors.name = "name should be longer than 5 or greater than 30";
       }
 
+      if (searchRoom.isError) {
+        void router.push("/?error=404");
+        errors.name = "Not found this room";
+      }
+
+      const roomIsPublic = searchRoom.data?.isPublic;
+
+      if (!roomIsPublic) {
+        void router.push("/?error=401");
+        errors.name = "This room is not public";
+      }
+
       const findUsers = searchRoom.data?.users.find(
         (user) => user.name === inputs.name,
       );
@@ -48,6 +60,7 @@ export default function Planning({ id }: PropTypes) {
     },
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     handleSubmit: async (inputs) => {
+      console.log("submit");
       await createUser
         .mutateAsync({ name: inputs.name, role: "user" })
         .then((userData) => {
@@ -87,7 +100,6 @@ export default function Planning({ id }: PropTypes) {
               </span>
             )}
           </div>
-
           <Button size="full">Create Room</Button>
         </form>
       </main>

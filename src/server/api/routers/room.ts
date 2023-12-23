@@ -2,20 +2,21 @@ import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import { OnlyFibboNumbers, fibbonacci } from "@/utils/fibbonacci";
 
 export const roomRouter = createTRPCRouter({
   createRoom: publicProcedure
     .input(
       z.object({
-        id: z.string().cuid(),
+        id: z.string(),
         roomName: z.string().min(5).max(30),
+        isPublic: z.boolean(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.room.create({
         data: {
           name: input.roomName,
+          isPublic: input.isPublic,
           users: {
             connect: { id: input.id },
           },
@@ -24,9 +25,9 @@ export const roomRouter = createTRPCRouter({
     }),
 
   searchRoom: publicProcedure
-    .input(z.object({ id: z.string().cuid() }))
+    .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      return await ctx.db.room.findUnique({
+      const room = await ctx.db.room.findUnique({
         where: {
           id: input.id,
         },
@@ -38,10 +39,19 @@ export const roomRouter = createTRPCRouter({
           },
         },
       });
+
+      if (!room) {
+        throw new TRPCError({
+          message: "Not found this room",
+          code: "NOT_FOUND",
+        });
+      }
+
+      return room;
     }),
 
   addUserRoom: publicProcedure
-    .input(z.object({ roomId: z.string().cuid(), userId: z.string().cuid() }))
+    .input(z.object({ roomId: z.string(), userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.room.update({
         data: {
@@ -58,9 +68,9 @@ export const roomRouter = createTRPCRouter({
   removeUserRoom: publicProcedure
     .input(
       z.object({
-        roomId: z.string().cuid(),
-        userToRemoveId: z.string().cuid(),
-        userAdminId: z.string().cuid(),
+        roomId: z.string(),
+        userToRemoveId: z.string(),
+        userAdminId: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -87,8 +97,8 @@ export const roomRouter = createTRPCRouter({
   changeFibboUserRoom: publicProcedure
     .input(
       z.object({
-        roomId: z.string().cuid(),
-        userId: z.string().cuid(),
+        roomId: z.string(),
+        userId: z.string(),
         fibbo: z.string(),
       }),
     )
@@ -107,7 +117,7 @@ export const roomRouter = createTRPCRouter({
   resetFibboRoom: publicProcedure
     .input(
       z.object({
-        roomId: z.string().cuid(),
+        roomId: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -133,6 +143,15 @@ export const roomRouter = createTRPCRouter({
 
       const usersId = roomUsers.users.map((user) => user.id);
 
+      await ctx.db.room.update({
+        where: {
+          id: input.roomId,
+        },
+        data: {
+          isReveal: false,
+        },
+      });
+
       return await ctx.db.user.updateMany({
         where: {
           id: { in: usersId },
@@ -143,10 +162,28 @@ export const roomRouter = createTRPCRouter({
       });
     }),
 
+  changePublicRoom: publicProcedure
+    .input(
+      z.object({
+        roomId: z.string(),
+        isPublic: z.boolean(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.room.update({
+        where: {
+          id: input.roomId,
+        },
+        data: {
+          isPublic: input.isPublic,
+        },
+      });
+    }),
+
   revealFibboRoom: publicProcedure
     .input(
       z.object({
-        roomId: z.string().cuid(),
+        roomId: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -192,7 +229,7 @@ export const roomRouter = createTRPCRouter({
         return accumulator + currentNumber;
       }, 0);
 
-      const averageFibbo = sumFibbo / fibboValuesGroup.length;
+      const averageFibbo = Math.round(sumFibbo / fibboValuesGroup.length);
 
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
@@ -231,9 +268,23 @@ export const roomRouter = createTRPCRouter({
 
       const nextFibbonacci = nearestNumber(averageFibbo);
 
-      return {
-        average: averageFibbo,
-        fibbonacci: nextFibbonacci,
-      };
+      await ctx.db.room.update({
+        where: {
+          id: input.roomId,
+        },
+        data: {
+          isReveal: true,
+        },
+      });
+
+      return await ctx.db.room.update({
+        where: {
+          id: input.roomId,
+        },
+        data: {
+          fibboRoom: nextFibbonacci,
+          averageRoom: averageFibbo,
+        },
+      });
     }),
 });

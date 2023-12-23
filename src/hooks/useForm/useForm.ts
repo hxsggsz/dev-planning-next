@@ -23,7 +23,7 @@ export function useForm<T extends object>({
     error,
     inputs,
     handleChange: (ev: React.FormEvent<HTMLInputElement>) => {
-      const value = ev.currentTarget.value;
+      const value = ev.currentTarget.value ?? ev.currentTarget.checked;
       const name = ev.currentTarget.name;
 
       setInputs({

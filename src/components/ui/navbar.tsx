@@ -59,20 +59,22 @@ export function Navbar(props: INavbar) {
           name={person.id === userId ? "Me" : person.name}
         />
         <div className="flex gap-2">
-          <Card
-            cancelAnimation
-            className="h-12 w-10 cursor-default"
-            fibbo={
-              person.fibbonacci && isFibboReveal
-                ? person.fibbonacci
-                : person.fibbonacci && !isFibboReveal
-                  ? "🫡"
-                  : "🤔"
-            }
-            activeFibbo={""}
-            //eslint-disable-next-line @typescript-eslint/no-empty-function
-            handleClick={() => {}}
-          />
+          {open && (
+            <Card
+              cancelAnimation
+              className="h-12 w-10 cursor-default"
+              fibbo={
+                person.fibbonacci && isFibboReveal
+                  ? person.fibbonacci
+                  : person.fibbonacci && !isFibboReveal
+                    ? "🫡"
+                    : "🤔"
+              }
+              activeFibbo={""}
+              //eslint-disable-next-line @typescript-eslint/no-empty-function
+              handleClick={() => {}}
+            />
+          )}
           {props.isAdmin && person.id !== userId && open && (
             <button onClick={() => props.removeUser(person.id)}>
               <Trash2 className="text-main transition-all hover:fill-main" />

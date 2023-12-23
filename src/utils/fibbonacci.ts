@@ -19,7 +19,6 @@ const emojis = [
 export function randomEmoji() {
   const arrayLength = emojis.length + 1;
   const randomNumber = Math.floor(Math.random() * (arrayLength - 1));
-  console.log(randomNumber);
   return emojis[randomNumber]!;
 }
 

@@ -23,11 +23,13 @@ model User {
 }
 
 model Room {
-    id        String   @id @unique @default(cuid())
-    name      String
-    isPublic  Boolean  @default(true)
-    isReveal  Boolean  @default(false)
-    createdAt DateTime @default(now())
+    id          String   @id @unique @default(cuid())
+    name        String
+    fibboRoom   Int      @default(0)
+    averageRoom Int      @default(0)
+    isPublic    Boolean  @default(true)
+    isReveal    Boolean  @default(false)
+    createdAt   DateTime @default(now())
 
     users User[]
 

@@ -9,6 +9,8 @@ import { CardBoard } from "@/components/ui/cardBoard";
 import { Button } from "@/components/ui/button";
 import { useFibboStore } from "@/stores/useFibboStore";
 import { Coins, RotateCcw } from "lucide-react";
+import { useRouter } from "next/router";
+import { Switch } from "@/components/ui/switch";
 
 interface PropTypes {
   id: string;
@@ -17,22 +19,41 @@ interface PropTypes {
 export default function Planning({ id }: PropTypes) {
   const [meId, setMeId] = useState<string | null>("");
 
+  const router = useRouter();
+
   const fibboStore = useFibboStore((state) => state);
 
   const { toast } = useToast();
 
   const ctx = api.useContext();
 
-  const searchRoom = api.room.searchRoom.useQuery({ id });
+  const searchRoom = api.room.searchRoom.useQuery(
+    { id },
+    { retry: false, refetchInterval: 1000 },
+  );
+
+  const getUser = api.user.searchUser.useQuery({ id: meId! }, { retry: false });
+
+  if (getUser.isError) {
+    void router.push(`/${id}/join`);
+  }
+
+  if (searchRoom.isError) {
+    void router.push("/?error=404");
+  }
 
   useEffect(() => {
     setMeId(localStorage.getItem("@me"));
-    if(searchRoom.error) {
-      console.log('condicao')
-    }
   }, []);
 
-  const getUser = api.user.searchUser.useQuery({ id: meId! });
+  const updatePublicRoom = api.room.changePublicRoom.useMutation({
+    onSuccess: () => ctx.invalidate(),
+    onError: (error) =>
+      toast({
+        title: "Something bad happened",
+        description: error.message,
+      }),
+  });
 
   const removeUserRoom = api.room.removeUserRoom.useMutation({
     onSuccess: () => ctx.invalidate(),
@@ -68,6 +89,14 @@ export default function Planning({ id }: PropTypes) {
       }),
   });
 
+  function copyInviteLink() {
+    void navigator.clipboard.writeText(`${location.origin}/${id}/join`);
+    toast({
+      title: "Link cliped!",
+      description: "Now send to your frinds or coworkers",
+    });
+  }
+
   function removeUser(userToRemoveId: string) {
     removeUserRoom.mutate({ roomId: id, userToRemoveId, userAdminId: meId! });
   }
@@ -95,16 +124,6 @@ export default function Planning({ id }: PropTypes) {
     return searchRoom.data?.users.find((user) => user.id === meId);
   }, [searchRoom.data]);
 
-  // useEffect(() => {
-  //   if(typeof window !== 'undefined') {
-  //     const findUser = searchRoom.data?.users.find((user) => user.id === meId);
-  //   console.log(findUser)
-  //   if (!findUser) {
-  //     void router.push(`${id}/join`);
-  //   }
-  //   }
-  // }, [searchRoom.data]);
-
   return (
     <>
       <Head>
@@ -120,39 +139,59 @@ export default function Planning({ id }: PropTypes) {
           list={searchRoom.data?.users}
         />
         <div className="relative flex min-h-screen w-full items-center justify-center">
+          <div className="absolute left-4 top-4">
+            <Button onClick={copyInviteLink} variant="outline">
+              Invite your friends
+            </Button>
+
+            {getUser.data?.role === "admin" && (
+              <div className="mt-4 flex gap-2">
+                <Switch
+                  checked={searchRoom.data?.isPublic ?? true}
+                  onCheckedChange={(boolean) =>
+                    updatePublicRoom.mutate({ roomId: id, isPublic: boolean })
+                  }
+                />
+                <p className="font-medium">
+                  This room still public?{" "}
+                  <span>{searchRoom.data?.isPublic ? "Yes" : "no"}</span>
+                </p>
+              </div>
+            )}
+          </div>
+
           <div className="rounded-md bg-main p-10">
             <h1 className="text-4xl font-bold">Let's Planning!</h1>
-            <p className="text-xl font-semibold">Select a card</p>
-            {revealFibbo.data && (
+            {searchRoom.data && searchRoom.data.isReveal && (
               <>
                 <h1 className="text-xl font-bold text-light/60">
                   Average:{" "}
                   <span className="text-light underline">
-                    {revealFibbo.data.average}
+                    {searchRoom.data.averageRoom}
                   </span>
                 </h1>
                 <h1 className="text-xl font-bold text-light/60">
                   Fibbonacci:{" "}
                   <span className="text-light underline">
-                    {revealFibbo.data.fibbonacci}
+                    {searchRoom.data.fibboRoom}
                   </span>
                 </h1>
               </>
             )}
             <div className="mt-2 flex min-w-52 gap-2">
-              {getUser.data?.role === "admin" && !fibboStore.isFibboReveal ? (
+              {getUser.data?.role === "admin" &&
+              !searchRoom.data?.isReveal &&
+              getUser.data?.fibbonacci ? (
                 <Button variant="white" size="full" onClick={revealFibbonacci}>
                   <Coins /> Reveal
                 </Button>
+              ) : getUser.data?.role === "admin" && getUser.data?.fibbonacci ? (
+                <Button variant="white" size="full" onClick={resetFibbonnacci}>
+                  <RotateCcw /> Start new voting
+                </Button>
               ) : (
-                getUser.data?.role === "admin" && (
-                  <Button
-                    variant="white"
-                    size="full"
-                    onClick={resetFibbonnacci}
-                  >
-                    <RotateCcw /> Reset
-                  </Button>
+                !getUser.data?.fibbonacci && (
+                  <p className="text-xl font-semibold">Select a card</p>
                 )
               )}
             </div>
@@ -175,22 +214,6 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       props: {},
     };
   }
-
-  // const trpc = appRouter.createCaller({ db });
-  // const result = await trpc.room.searchRoom({ id: id?.toString() });
-
-  // if (!result) {
-  //   return {
-  //     redirect: {
-  //       destination: "/",
-  //     },
-  //     props: {},
-  //   };
-  // }
-
-  // const userParsed = result.users.map((user) => {
-  //   user.createdAt = user.createdAt.toString() as unknown as string;
-  // });
 
   return {
     props: {

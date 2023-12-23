@@ -1,13 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Toaster } from "@/components/ui/toaster";
+import { useToast } from "@/components/ui/use-toast";
 import { useForm } from "@/hooks/useForm/useForm";
 import { api } from "@/utils/api";
 import Head from "next/head";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 
 export default function Home() {
+  const [isPublic, setIsPublic] = useState(true);
   const router = useRouter();
+
+  const { toast } = useToast();
 
   const createRoom = api.room.createRoom.useMutation();
 
@@ -42,6 +49,7 @@ export default function Home() {
           localStorage.setItem("@me", userData.id);
           await createRoom
             .mutateAsync({
+              isPublic,
               id: userData.id,
               roomName: inputs.room,
             })
@@ -49,6 +57,24 @@ export default function Home() {
         });
     },
   });
+
+  useEffect(() => {
+    const error = router.query.error?.toString();
+
+    if (error && error === "401") {
+      toast({
+        title: "Something bad happened",
+        description: "This room is not public! :(",
+      });
+    }
+
+    if (error && error === "404") {
+      toast({
+        title: "Something bad happened",
+        description: "I did not found this room! :(",
+      });
+    }
+  }, [router.query]);
 
   return (
     <>
@@ -95,6 +121,15 @@ export default function Home() {
               </span>
             )}
           </div>
+          <div className="flex gap-2">
+            <Switch
+              name="isPublic"
+              checked={isPublic}
+              onCheckedChange={setIsPublic}
+            />{" "}
+            <span className="font-medium">This room is public?</span>
+          </div>
+          <Toaster />
           <Button size="full">Create Room</Button>
         </form>
       </main>
