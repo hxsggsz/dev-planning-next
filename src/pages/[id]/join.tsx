@@ -108,7 +108,7 @@ export default function Planning({ id }: PropTypes) {
             }
             size="full"
           >
-            Create Room
+            Join the Room
           </Button>
         </form>
       </main>
