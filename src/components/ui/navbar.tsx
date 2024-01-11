@@ -4,11 +4,11 @@ import { motion } from "framer-motion";
 import { Person } from "./person";
 import { Skeleton } from "./skeleton";
 import { Card } from "./card";
-import { useFibboStore } from "@/stores/useFibboStore";
 
 interface INavbar {
   removeUser: (id: string) => void;
   isAdmin: boolean;
+  isFibboReveal: boolean;
   list:
     | {
         id: string;
@@ -23,8 +23,6 @@ interface INavbar {
 
 export function Navbar(props: INavbar) {
   const [open, setOpen] = useState(true);
-
-  const isFibboReveal = useFibboStore((state) => state.isFibboReveal);
 
   const renderSkeleton = () => (
     <>
@@ -64,9 +62,9 @@ export function Navbar(props: INavbar) {
               cancelAnimation
               className="h-12 w-10 cursor-default"
               fibbo={
-                person.fibbonacci && isFibboReveal
+                person.fibbonacci && props.isFibboReveal
                   ? person.fibbonacci
-                  : person.fibbonacci && !isFibboReveal
+                  : person.fibbonacci && !props.isFibboReveal
                     ? "🫡"
                     : "🤔"
               }

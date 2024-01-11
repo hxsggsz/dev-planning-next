@@ -95,7 +95,7 @@ export default function Planning({ id }: PropTypes) {
     void navigator.clipboard.writeText(`${location.origin}/${id}/join`);
     toast({
       title: "Link cliped!",
-      description: "Now send to your frinds or coworkers",
+      description: "Now send to your friends or coworkers",
     });
   }
 
@@ -135,9 +135,10 @@ export default function Planning({ id }: PropTypes) {
       <main className="flex min-h-screen w-full">
         <Toaster />
         <Navbar
-          isAdmin={getUser.data?.role === "admin"}
           removeUser={removeUser}
           list={searchRoom.data?.users}
+          isAdmin={getUser.data?.role === "admin"}
+          isFibboReveal={searchRoom.data?.isReveal ?? false}
         />
         <div className="relative flex min-h-screen w-full items-center justify-center">
           <div className="absolute left-4 top-4">
@@ -191,9 +192,10 @@ export default function Planning({ id }: PropTypes) {
                   <RotateCcw /> Start new voting
                 </Button>
               ) : (
-                !getUser.data?.fibbonacci && (
+                !getUser.data?.fibbonacci ? (
                   <p className="text-xl font-semibold">Select a card</p>
-                )
+                ) : <p className="text-xl font-semibold">Wait for the Host to reveal the cards</p>
+
               )}
             </div>
           </div>
