@@ -12,6 +12,8 @@ import { Coins, RotateCcw } from "lucide-react";
 import { useRouter } from "next/router";
 import { Switch } from "@/components/ui/switch";
 
+export const dynamic = 'force-dynamic'
+
 interface PropTypes {
   id: string;
 }
