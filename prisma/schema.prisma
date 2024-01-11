@@ -2,36 +2,36 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "cockroachdb"
-    url      = env("DATABASE_URL")
+  provider = "cockroachdb"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-    id         String   @id @unique @default(cuid())
-    name       String
-    createdAt  DateTime @default(now())
-    fibbonacci String   @default("")
-    role       String
-    Room       Room?    @relation(fields: [roomId], references: [id])
-    roomId     String?
+  id         String   @id @unique @default(cuid())
+  name       String
+  createdAt  DateTime @default(now())
+  fibbonacci String   @default("")
+  role       String
+  Room       Room?    @relation(fields: [roomId], references: [id])
+  roomId     String?
 
-    @@map("user")
+  @@map("user")
 }
 
 model Room {
-    id          String   @id @unique @default(cuid())
-    name        String
-    fibboRoom   Int      @default(0)
-    averageRoom Int      @default(0)
-    isPublic    Boolean  @default(true)
-    isReveal    Boolean  @default(false)
-    createdAt   DateTime @default(now())
+  id          String   @id @unique @default(cuid())
+  name        String
+  fibboRoom   Int      @default(0)
+  averageRoom Int      @default(0)
+  isPublic    Boolean  @default(true)
+  isReveal    Boolean  @default(false)
+  createdAt   DateTime @default(now())
 
-    users User[]
+  users User[]
 
-    @@map("room")
+  @@map("room")
 }

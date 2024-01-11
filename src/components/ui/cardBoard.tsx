@@ -3,14 +3,13 @@ import { fibbonacci } from "@/utils/fibbonacci";
 import { useFibboStore } from "@/stores/useFibboStore";
 
 interface ICardBoard {
+  activeFibbo: string;
   updateFibbonnacci: (fibbo: string) => void;
 }
 
 export function CardBoard(props: ICardBoard) {
-  const fibboStore = useFibboStore((state) => state);
 
   function updateFibbo(fibbo: string) {
-    fibboStore.updateFibbo(fibbo);
     props.updateFibbonnacci(fibbo);
   }
 
@@ -19,7 +18,7 @@ export function CardBoard(props: ICardBoard) {
       {fibbonacci.map((number) => (
         <li key={number}>
           <Card
-            activeFibbo={fibboStore.fibbo}
+            activeFibbo={props.activeFibbo}
             handleClick={updateFibbo}
             fibbo={number}
           />

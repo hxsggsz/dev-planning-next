@@ -125,7 +125,6 @@ export default function Planning({ id }: PropTypes) {
   const findMe = useMemo(() => {
     return searchRoom.data?.users.find((user) => user.id === meId);
   }, [searchRoom.data]);
-
   return (
     <>
       <Head>
@@ -198,7 +197,7 @@ export default function Planning({ id }: PropTypes) {
               )}
             </div>
           </div>
-          {findMe && <CardBoard updateFibbonnacci={updateFibbonnacci} />}
+          {findMe && <CardBoard activeFibbo={findMe.fibbonacci} updateFibbonnacci={updateFibbonnacci} />}
         </div>
       </main>
     </>
