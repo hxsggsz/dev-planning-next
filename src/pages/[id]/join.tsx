@@ -101,6 +101,11 @@ export default function Planning({ id }: PropTypes) {
             )}
           </div>
           <Button
+            isLoading={
+              searchRoom.isLoading ||
+              createUser.isLoading ||
+              addUserRoom.isLoading
+            }
             disabled={
               searchRoom.isLoading ||
               createUser.isLoading ||

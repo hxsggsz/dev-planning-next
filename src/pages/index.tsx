@@ -132,6 +132,7 @@ export default function Home() {
           <Toaster />
           <Button
             disabled={createRoom.isLoading || createUser.isLoading}
+            isLoading={createRoom.isLoading || createUser.isLoading}
             size="full"
           >
             Create Room
