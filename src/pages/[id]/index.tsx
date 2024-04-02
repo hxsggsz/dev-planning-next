@@ -137,13 +137,43 @@ export default function Planning({ id }: PropTypes) {
     </>
   );
 
-  const shouldShowRevealCardsButton =
-    getUser.data?.role === "admin" &&
-    !searchRoom.data?.isReveal &&
-    getUser.data?.fibbonacci;
+  const renderToggleRoomPublic = () => (
+    <div className="mt-4 flex gap-2">
+      <Switch
+        checked={searchRoom.data?.isPublic ?? true}
+        onCheckedChange={(boolean) =>
+          updatePublicRoom.mutate({ roomId: id, isPublic: boolean })
+        }
+      />
+      <p className="font-medium">
+        This room still public?{" "}
+        <span>{searchRoom.data?.isPublic ? "Yes" : "no"}</span>
+      </p>
+    </div>
+  );
 
-  const shouldShowResetCardsButton =
-    getUser.data?.role === "admin" && getUser.data?.fibbonacci;
+  const renderAdminButtons = () =>
+    !searchRoom.data?.isReveal && getUser.data?.fibbonacci ? (
+      <Button
+        size="full"
+        variant="white"
+        onClick={revealFibbonacci}
+        isLoading={revealFibbo.isLoading}
+      >
+        <Coins /> Reveal
+      </Button>
+    ) : (
+      <Button
+        size="full"
+        variant="white"
+        onClick={resetFibbonnacci}
+        isLoading={resetFibbo.isLoading}
+      >
+        <RotateCcw /> Start new voting
+      </Button>
+    );
+
+  const isUserAdmin = getUser.data?.role === "admin";
 
   return (
     <>
@@ -166,20 +196,7 @@ export default function Planning({ id }: PropTypes) {
               Invite your friends
             </Button>
 
-            {getUser.data?.role === "admin" && (
-              <div className="mt-4 flex gap-2">
-                <Switch
-                  checked={searchRoom.data?.isPublic ?? true}
-                  onCheckedChange={(boolean) =>
-                    updatePublicRoom.mutate({ roomId: id, isPublic: boolean })
-                  }
-                />
-                <p className="font-medium">
-                  This room still public?{" "}
-                  <span>{searchRoom.data?.isPublic ? "Yes" : "no"}</span>
-                </p>
-              </div>
-            )}
+            {getUser.data?.role === "admin" && renderToggleRoomPublic()}
           </div>
 
           <div className="rounded-md bg-main p-10">
@@ -187,29 +204,9 @@ export default function Planning({ id }: PropTypes) {
             {searchRoom.data && searchRoom.data.isReveal && renderRoomResult()}
 
             <div className="mt-2 flex min-w-52 gap-2">
-              {shouldShowRevealCardsButton ? (
-                <Button
-                  isLoading={revealFibbo.isLoading}
-                  variant="white"
-                  size="full"
-                  onClick={revealFibbonacci}
-                >
-                  <Coins /> Reveal
-                </Button>
-              ) : (
-                shouldShowResetCardsButton && (
-                  <Button
-                    isLoading={resetFibbo.isLoading}
-                    variant="white"
-                    size="full"
-                    onClick={resetFibbonnacci}
-                  >
-                    <RotateCcw /> Start new voting
-                  </Button>
-                )
-              )}
-
-              {!getUser.data?.fibbonacci ? (
+              {isUserAdmin ? (
+                renderAdminButtons()
+              ) : !getUser.data?.fibbonacci ? (
                 <p className="text-xl font-semibold">Select a card</p>
               ) : !searchRoom.data?.isReveal ? (
                 <p className="text-xl font-semibold">
